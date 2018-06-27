@@ -13,6 +13,7 @@ library Structs {
         bytes32 proposalHash;
         Vote[] votes;
         mapping (address => bool) voted;
+        uint creationDate;
     }
 
     struct Member {

@@ -71,7 +71,7 @@ contract LiquidDemocracy {
     function execute(address target, uint valueInWei, bytes32 bytecode) public {
         require(msg.sender == appointee                             // If caller is the current appointee,
             && !underExecution //                                   // if the call is being executed,
-            && bytes4(bytecode) != bytes4(keccak256(forbiddenFunction))  // and it's not trying to do the forbidden function
+            && bytes4(bytecode) != bytes4(keccak256(abi.encodePacked(forbiddenFunction)))  // and it's not trying to do the forbidden function
             && numberOfDelegationRounds >= 4);                     // and delegation has been calculated enough
 
         underExecution = true;

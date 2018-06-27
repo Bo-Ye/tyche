@@ -30,7 +30,7 @@ contract TimeLockMultisig is Owned, TokenRecipient {
      *
      * First time setup
      */
-    constructor(address founder, address[] initialMembers, uint minimumAmountOfMinutes) payable {
+    constructor(address founder, address[] initialMembers, uint minimumAmountOfMinutes) payable public {
         if (founder != 0) owner = founder;
         if (minimumAmountOfMinutes != 0) minimumTime = minimumAmountOfMinutes;
         // It’s necessary to add an empty first member
@@ -113,7 +113,7 @@ contract TimeLockMultisig is Owned, TokenRecipient {
         p.recipient = beneficiary;
         p.amount = weiAmount;
         p.description = jobDescription;
-        p.proposalHash = keccak256(beneficiary, weiAmount, transactionBytecode);
+        p.proposalHash = keccak256(abi.encodePacked(beneficiary, weiAmount, transactionBytecode));
         p.executed = false;
         p.creationDate = now;
         emit ProposalAdded(proposalID, beneficiary, weiAmount, jobDescription);
@@ -164,7 +164,7 @@ contract TimeLockMultisig is Owned, TokenRecipient {
         returns (bool codeChecksOut)
     {
         Structs.Proposal storage p = proposals[proposalNumber];
-        return p.proposalHash == keccak256(beneficiary, weiAmount, transactionBytecode);
+        return p.proposalHash == keccak256(abi.encodePacked(beneficiary, weiAmount, transactionBytecode));
     }
 
     /**
@@ -198,7 +198,7 @@ contract TimeLockMultisig is Owned, TokenRecipient {
         // If you can execute it now, do it
         if ( now > proposalDeadline(proposalNumber)
             && p.currentResult > 0
-            && p.proposalHash == keccak256(p.recipient, p.amount, "")
+            && p.proposalHash == keccak256(abi.encodePacked(p.recipient, p.amount, ""))
             && supportsProposal) {
             executeProposal(proposalNumber, "");
         }
@@ -210,7 +210,7 @@ contract TimeLockMultisig is Owned, TokenRecipient {
         return p.creationDate + uint(factor * minimumTime * 1 minutes);
     }
 
-    function calculateFactor(uint a, uint b) view public returns (uint factor) {
+    function calculateFactor(uint a, uint b) pure public returns(uint factor) {
         return 2**(20 - (20 * a)/b);
     }
 
