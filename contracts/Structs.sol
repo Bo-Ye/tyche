@@ -1,6 +1,12 @@
 pragma solidity ^0.4.16;
 
 library Structs {
+    struct Vote {
+        bool inSupport;
+        address voter;
+        string justification;
+    }
+
     struct Proposal {
         address recipient;
         uint amount;
@@ -12,7 +18,7 @@ library Structs {
         int currentResult;
         bytes32 proposalHash;
         Vote[] votes;
-        mapping (address => bool) voted;
+        mapping(address => bool) voted;
         uint creationDate;
     }
 
@@ -22,11 +28,6 @@ library Structs {
         uint memberSince;
     }
 
-    struct Vote {
-        bool inSupport;
-        address voter;
-        string justification;
-    }
 
     struct DelegatedVote {
         address nominee;
