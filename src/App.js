@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import { Accounts } from "./Accounts";
+import Accounts from "./Accounts";
 
 class App extends Component{
   render(){
