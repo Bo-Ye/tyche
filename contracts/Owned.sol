@@ -11,8 +11,8 @@ contract Owned {
         require(msg.sender == owner);
         _;
     }
-
-    function transferOwnership(address newOwner) onlyOwner  public {
+    
+    function transferOwnership(address newOwner) onlyOwner public {
         owner = newOwner;
     }
 }
