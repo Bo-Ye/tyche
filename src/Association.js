@@ -35,7 +35,7 @@ class Association extends Component{
         };
     return (
       <div >
-        <div>Administrator's current token balance: {this.state.balance}</div>
+        <div>Administrator&#39;s current token balance: {this.state.balance}</div>
         <div>Change Voting Rules</div>
         <div>
             <label>Minimum shares to pass a vote: </label>
