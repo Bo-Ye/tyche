@@ -74,7 +74,9 @@ class User extends Component{
             </fieldset>
         </div>
         <div>
-            <h3>Create a proposal</h3>
+            <div>
+                <h3>Create a proposal</h3>
+            </div>
             <div>
                 <label>Proposal: </label>
                 <textarea rows="4" cols="57"></textarea>
