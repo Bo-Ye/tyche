@@ -9,14 +9,18 @@ class Association extends Component{
     this.state = {
       balance: 0,
       minimumSharesToPassAVote: 0,
-      minimumSharesToPassAVoteInput: '',
       minutesForDebate: 0,
-      minutesForDebateInput: ''
+      proposals: [],
+      minimumSharesToPassAVoteInput: '',
+      minutesForDebateInput: '',
+      newProposal: ''
     };
 
     this.handleMinimumSharesToPassAVoteInputChange = this.handleMinimumSharesToPassAVoteInputChange.bind(this);
     this.handleMinutesForDebateInputChange = this.handleMinutesForDebateInputChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleChangeVotingRulesSubmit = this.handleChangeVotingRulesSubmit.bind(this);
+    this.handleCreateAProposalSubmit = this.handleCreateAProposalSubmit.bind(this);
+    this.handleNewProposalChange = this.handleNewProposalChange.bind(this);
   }
 
   componentWillMount() {
@@ -40,6 +44,7 @@ class Association extends Component{
     Association.setProvider(this.web3.currentProvider);
     Association.deployed().then(instance => this.association = instance).then(() => {
         this.setVotingRulesState();
+        this.setProposalsState();
     });
   }
 
@@ -56,15 +61,35 @@ class Association extends Component{
       });
   }
 
-   handleMinimumSharesToPassAVoteInputChange(event) {
+  setProposalsState(){
+      var proposals = [];
+      var proposalPromises = [];
+      this.association.numProposals().then(numProposals => {
+         for(var i = 0; i < numProposals; i++){
+            var proposalPromise = this.association.proposals(i).then( proposal => proposals.push(proposal[2]));
+            proposalPromises.push(proposalPromise);
+         }
+         Promise.all(proposalPromises).then( () => {
+            this.setState({
+                proposals: proposals
+            });
+         });
+      });
+  }
+
+  handleMinimumSharesToPassAVoteInputChange(event) {
       this.setState({minimumSharesToPassAVoteInput: event.target.value});
-    }
+  }
 
-   handleMinutesForDebateInputChange(event) {
+  handleMinutesForDebateInputChange(event) {
       this.setState({minutesForDebateInput: event.target.value});
-   }
+  }
 
-  handleSubmit(event) {
+  handleNewProposalChange(event) {
+      this.setState({newProposal: event.target.value});
+  }
+
+  handleChangeVotingRulesSubmit(event) {
     this.association.changeVotingRules(this.sharesAddress, this.state.minimumSharesToPassAVoteInput, this.state.minutesForDebateInput, {from: this.administrator}).then(() => {
        this.setVotingRulesState();
        this.setState({
@@ -75,6 +100,16 @@ class Association extends Component{
     event.preventDefault();  //to prevent submit event from navigating to another page
   }
 
+  handleCreateAProposalSubmit(event) {
+      this.association.newProposal(0, 0, this.state.newProposal, 0, {from: this.administrator,  gas:3000000}).then(() => {
+         this.setProposalsState();
+         this.setState({
+            newProposal: ''
+         });
+      });
+      event.preventDefault();  //to prevent submit event from navigating to another page
+  }
+
   render(){
     var divSubmit = {
       width: 500,
@@ -82,10 +117,23 @@ class Association extends Component{
     };
     var inputSubmit = {
           float: 'right'
-        };
+    };
+    var proposalStyle = {
+        verticalAlign: 'middle'
+    };
+    var trProposals = [];
+    for (var i = 0; i < this.state.proposals.length; i++) {
+            trProposals.push(<tr key={i}>
+                                <td>{this.state.proposals[i]}</td>
+                                <td></td>
+                                <td></td>
+                             </tr>);
+    }
     return (
       <div >
-        <div>Administrator&#39;s current token balance: {this.state.balance}</div>
+        <div>
+            <p>Administrator&#39;s current token balance: {this.state.balance}</p>
+        </div>
         <div>
             <fieldset>
                 <legend>Association:</legend>
@@ -95,12 +143,26 @@ class Association extends Component{
                 </div>
                 <div>
                     <h6>Proposals</h6>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Voted</th>
+                                <th>Time to expire</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {trProposals}
+                        </tbody>
+                    </table>
                 </div>
             </fieldset>
         </div>
         <div>
-            <form onSubmit={this.handleSubmit}>
-                <h3>Change Voting Rules</h3>
+            <form onSubmit={this.handleChangeVotingRulesSubmit}>
+                <div>
+                    <h3>Change Voting Rules</h3>
+                </div>
                 <div>
                     <label>Minimum shares to pass a vote: </label>
                     <input type="text" value={this.state.minimumSharesToPassAVoteInput} onChange={this.handleMinimumSharesToPassAVoteInputChange}/>
@@ -115,11 +177,18 @@ class Association extends Component{
             </form>
         </div>
         <div>
-            <h3>Create a proposal</h3>
-            <div>
-                <label>Proposal: </label>
-                <textarea rows="4" cols="57"></textarea>
-            </div>
+            <form onSubmit={this.handleCreateAProposalSubmit}>
+                <div>
+                    <h3>Create a proposal</h3>
+                </div>
+                <div >
+                    <label style={proposalStyle}>Proposal: </label>
+                    <textarea rows="4" cols="57" style={proposalStyle} value={this.state.newProposal} onChange={this.handleNewProposalChange}></textarea>
+                </div>
+                <div style={divSubmit}>
+                    <input type="submit" style={inputSubmit}  value="Submit"/>
+                </div>
+            </form>
         </div>
       </div>
     );
